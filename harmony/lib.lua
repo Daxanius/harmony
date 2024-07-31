@@ -101,6 +101,18 @@ function HarmonySession:_makeRequest(endpoint, method, data, binary)
     end
 end
 
+function HarmonySession:getServerVersion()
+    local success, response = self:_makeRequest("", "GET")
+
+    if success then
+        self:_log("Fetch server version success: " .. response)
+    else
+        self:_log("Fetch server version failed: " .. response)
+    end
+
+    return success, response
+end
+
 function HarmonySession:login(username, password)
     local success, response = self:_makeRequest("user/login", "POST", { name = username, password = password })
 
