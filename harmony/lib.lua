@@ -117,7 +117,7 @@ function HarmonySession:login(username, password)
 end
 
 function HarmonySession:register(username, password)
-    local success, response = self:_makeRequest("/user", "POST", { name = username, password = password })
+    local success, response = self:_makeRequest("user", "POST", { name = username, password = password })
 
     if success then
         self:_log("Registration successful for user: " .. username)
@@ -133,9 +133,9 @@ function HarmonySession:listSongs(query)
     local success, response
 
     if query == nil then
-        success, response = self:_makeRequest("", "GET")
+        success, response = self:_makeRequest("song", "GET")
     else
-        success, response = self:_makeRequest("find/" .. query, "GET")
+        success, response = self:_makeRequest("song/find/" .. query, "GET")
     end
 
     if success then
@@ -220,7 +220,8 @@ function HarmonySession:stopStream()
 end
 
 function HarmonySession:addSong(name, author, youtubeURL)
-    local success, response = self:_makeRequest("", "POST", { name = name, author = author, youtube_url = youtubeURL }) -- Open file stream
+    local success, response = self:_makeRequest("song", "POST",
+        { name = name, author = author, youtube_url = youtubeURL }) -- Open file stream
 
     if success then
         self:_log("Adding song successful: " .. response.youtube_url)
