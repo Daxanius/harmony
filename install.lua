@@ -1,4 +1,4 @@
-local repoURL = "https://raw.githubusercontent.com/Daxanius/harmony"
+local repoURL = "https://raw.githubusercontent.com/Daxanius/harmony/main"
 
 -- List of files to download and their paths
 local files = {
