@@ -6,6 +6,7 @@ local files = {
     "/harmony/config.lua",
     "/harmony/gui.lua",
     "/harmony/lib.lua",
+    "/harmony/update.lua",
     "/harmony/version.txt",
     "/harmony/theme/default.lua"
 }
