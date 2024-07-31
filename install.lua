@@ -7,7 +7,7 @@ local files = {
     "/harmony/gui.lua",
     "/harmony/lib.lua",
     "/harmony/version.txt",
-    "/harmony/theme/theme.lua"
+    "/harmony/theme/default.lua"
 }
 
 -- Function to download and save a file
