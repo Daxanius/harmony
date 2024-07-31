@@ -2,7 +2,7 @@ local repoURL = "https://raw.githubusercontent.com/Daxanius/harmony/main"
 
 -- List of files to download and their paths
 local files = {
-    "harmony.lua",
+    "/harmony.lua",
     "/harmony/config.lua",
     "/harmony/gui.lua",
     "/harmony/lib.lua",
