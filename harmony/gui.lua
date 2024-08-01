@@ -310,6 +310,7 @@ local function createAudioControl(parent, onAdd)
 
     addButton:onClick(function(self, event, item, x, y)
         onAdd()
+        listSongs(queryCache)
     end)
 
     playButton:onClick(function(self, event, item, x, y)
