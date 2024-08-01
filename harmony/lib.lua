@@ -25,6 +25,7 @@ local HarmonySession = {
     _log_function = function(message)
         print(message)
     end,
+    _maxStreamFails = 5,
     chunkSize = 16 * 1024,
     user = nil,
     verbose = false,
@@ -35,11 +36,12 @@ local HarmonySession = {
     history = {}
 }
 
-function HarmonySession:new(host, chunks, verbose, logFunction)
+function HarmonySession:new(host, chunks, maxStreamFails, verbose, logFunction)
     local o = {}
     setmetatable(o, self)
     self.__index = self
     self._host = host or self._host
+    self._maxStreamFails = maxStreamFails
     self.chunkSize = chunks * 1024
 
     if logFunction ~= nil then
@@ -203,7 +205,7 @@ function HarmonySession:playStream()
         else
             self.songState.fails = self.songState.fails + 1
 
-            if self.songState.fails > 5 then -- Stop playing after multiple failed attempts
+            if self.songState.fails > self._maxStreamFails then -- Stop playing after multiple failed attempts
                 self.songState = nil
                 return false
             end
