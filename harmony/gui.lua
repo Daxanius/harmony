@@ -12,14 +12,18 @@ local main           = basalt.createFrame()
 local frame          = main:addFrame():setSize("parent.w", "parent.h"):setBackground(config.theme.background)
 local playThread     = main:addThread()
 
-function Format(Int)
+local function Format(Int)
     return string.format("%02i", Int)
 end
 
-function convertToMS(Seconds)
+local function convertToMS(Seconds)
     local Minutes = (Seconds - Seconds % 60) / 60
     Seconds = Seconds - Minutes * 60
     return Format(Minutes) .. ":" .. Format(Seconds)
+end
+
+local function isSmall(parent)
+    return parent:getWidth() < 30
 end
 
 local function createPopup(parent, extraWidth, extraHeight)
@@ -27,7 +31,7 @@ local function createPopup(parent, extraWidth, extraHeight)
             .theme.foreGround)
         :setZIndex(100)
 
-    if parent:getWidth() < 30 then
+    if isSmall(parent) then
         control:setSize("parent.w", "parent.h")
     else
         control:setSize("parent.w / 2 + " .. (extraWidth or 0), "parent.h / 2 + " .. (extraHeight or 0)):setPosition(
