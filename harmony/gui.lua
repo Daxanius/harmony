@@ -199,6 +199,10 @@ local function createAddSongControl(parent, onAdd, onCancel)
             return
         end
 
+        if onAdd then
+            onAdd()
+        end
+
         control:remove()
     end)
 end
