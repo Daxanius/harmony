@@ -22,7 +22,7 @@ function convertToMS(Seconds)
     return Format(Minutes) .. ":" .. Format(Seconds)
 end
 
-local function createPopup(parent)
+local function createPopup(parent, extraWidth, extraHeight)
     local control = parent:addMovableFrame("notification"):setBackground(config.theme.decoration):setForeground(config
             .theme.foreGround)
         :setZIndex(100)
@@ -30,7 +30,7 @@ local function createPopup(parent)
     if parent:getWidth() < 30 then
         control:setSize("parent.w", "parent.h")
     else
-        control:setSize("parent.w / 2", "parent.h / 2"):setPosition(
+        control:setSize("parent.w / 2 + " .. (extraWidth or 0), "parent.h / 2 + " .. (extraHeight or 0)):setPosition(
             "parent.w / 2 - self.w / 2",
             "parent.h / 2 - self.h / 2")
     end
@@ -105,7 +105,7 @@ local function createLoginControl(parent, onLogin)
 end
 
 local function createAddSongControl(parent, onAdd, onCancel)
-    local control = createPopup(parent):setSize("self.w", "parent.h / 2 + 2")
+    local control = createPopup(parent, 0, 2)
     local titleLabel = control:addLabel():setText("Add Song"):setForeground(config.theme.foreGround):setPosition(
         "parent.w / 2 - self.w / 2", 2):setTextAlign(
         "center")
