@@ -167,7 +167,7 @@ local function createLoginControl(parent, onLogin)
     end)
 end
 
-local function createAddSongControl(parent, onAdd, onCancel)
+local function createAddSongControl(parent)
     local control = createPopup(parent, 0, 2)
     local titleLabel = control:addLabel():setText("Add Song"):setForeground(config.theme.foreGround):setPosition(
         "parent.w / 2 - self.w / 2", 2):setTextAlign(
@@ -185,10 +185,6 @@ local function createAddSongControl(parent, onAdd, onCancel)
 
     cancelButton:onClick(function(self, event, button, x, y)
         control:remove()
-
-        if onCancel ~= nil then
-            onCancel()
-        end
     end)
 
     addButton:onClick(function(self, event, button, x, y)
@@ -196,14 +192,9 @@ local function createAddSongControl(parent, onAdd, onCancel)
 
         if not success then
             showNotification(message, config.theme.errorColor)
-            return
+        else
+            control:remove()
         end
-
-        if onAdd then
-            onAdd()
-        end
-
-        control:remove()
     end)
 end
 
@@ -259,17 +250,22 @@ local function createAudioControl(parent, fetchSongs, onAdd)
     local nextButton = createButton(controlFrame):setText(">"):setPosition("parent.w / 2 - self.w / 2 + 6", 1)
         :setSize(3, 3)
 
-    local volumeSlider = controlFrame:addSlider():setBarType("horizontal"):setMaxValue(10):setIndex(Volume / 3.0 *
-            10):setPosition(2, 2)
-        :setForeground(config.theme.inputBackground)
+    if not isSmall(parent) then
+        local volumeSlider = controlFrame:addSlider():setBarType("horizontal"):setMaxValue(10):setIndex(Volume / 3.0 *
+                10):setPosition(2, 2)
+            :setForeground(config.theme.inputBackground)
 
+        volumeSlider:onChange(function(self, event, value)
+            Volume = (value / 10.0) * 3.0
+        end)
 
-    local typeDropdown = controlFrame:addDropdown():setForeground(config.theme.inputForeground):setBackground(config
-        .theme.inputBackground):addItem(
-        "Normal"):addItem(
-        "Shuffle"):addItem(
-        "Loop"):addItem(
-        "Stop"):setPosition("parent.w - self.w - 2", 2):setScrollable(true)
+        local typeDropdown = controlFrame:addDropdown():setForeground(config.theme.inputForeground):setBackground(config
+            .theme.inputBackground):addItem(
+            "Normal"):addItem(
+            "Shuffle"):addItem(
+            "Loop"):addItem(
+            "Stop"):setPosition("parent.w - self.w - 2", 2):setScrollable(true)
+    end
 
     local progressBar = controlFrame:addProgressbar():setDirection("right"):setProgressBar(config.theme.inputBackground)
         :setSize(
@@ -303,7 +299,6 @@ local function createAudioControl(parent, fetchSongs, onAdd)
         local offset = songList:getOffset()
 
         songList:clear()
-        songList:setOffset(0)
         for songCount = 1, #songs do
             local color = nil
             if session.songState ~= nil and songs[songCount].id == session.songState.song.id then
@@ -361,13 +356,10 @@ local function createAudioControl(parent, fetchSongs, onAdd)
         stop()
     end
 
-    local function play()
-        if songList:getValue() == nil or songList:getValue().args == nil then
-            return
-        end
-
+    local function play(song)
         session:stopStream()
-        if session:loadStream(songList:getValue().args[1]) then
+        barThread:stop()
+        if session:loadStream(song) then
             listSongs(queryCache)
             playButton:setText("Stop"):setBackground(config.theme.errorColor)
             playThread:start(playTask)
@@ -377,24 +369,30 @@ local function createAudioControl(parent, fetchSongs, onAdd)
 
     addButton:onClick(function(self, event, item, x, y)
         onAdd()
-        listSongs(queryCache)
     end)
 
     playButton:onClick(function(self, event, item, x, y)
         if session.songState ~= nil then
             stop()
         else
-            play()
+            if songList:getValue() == nil or songList:getValue().args == nil then
+                return
+            end
+
+            play(songList:getValue().args[1])
+        end
+    end)
+
+    previousButton:onClick(function(self, event, item, x, y)
+        if #session.history > 0 then
+            play(session.history[#session.history])
         end
     end)
 
     searchBar:onChange(function(self, event, item)
         listSongs(item)
         queryCache = item
-    end)
-
-    volumeSlider:onChange(function(self, event, value)
-        Volume = (value / 10.0) * 3.0
+        songList:setOffset(0)
     end)
 
     listSongs()
