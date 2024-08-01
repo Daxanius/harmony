@@ -4,6 +4,7 @@ return {
     server = "http://127.0.0.1:8000/",
     theme = require("theme.default"),
     debug = false,
-    chunks = 4,
-    maxStreamFails = 5
+    streamSize = 4,
+    maxStreamFails = 5,
+    streamFailCooldown = 0.1
 }

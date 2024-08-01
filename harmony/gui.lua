@@ -4,9 +4,11 @@ local basalt         = require("/basalt")
 local config         = require("config")
 local HarmonySession = require("lib")
 
-local session        = HarmonySession:new(config.server, config.chunks, config.debug, function(message)
-    basalt.debug(message)
-end)
+local session        = HarmonySession:new(config.server, config.streamSize, config.streamFailCooldown,
+    config.maxStreamFails, config.debug,
+    function(message)
+        basalt.debug(message)
+    end)
 
 local main           = basalt.createFrame()
 local frame          = main:addFrame():setSize("parent.w", "parent.h"):setBackground(config.theme.background)
@@ -228,7 +230,7 @@ local function createUpdateControl(parent, onCancel)
     end)
 end
 
-local function createAudioControl(parent, onAdd)
+local function createAudioControl(parent, fetchSongs, onAdd)
     local barThread = parent:addThread()
     local queryCache = nil
 
@@ -287,7 +289,7 @@ local function createAudioControl(parent, onAdd)
             query = nil
         end
 
-        local success, songs = session:listSongs(query)
+        local success, songs = fetchSongs(query)
 
         if not success or not songs then
             return
@@ -317,13 +319,13 @@ local function createAudioControl(parent, onAdd)
     end
 
     local function updateBar()
-        local secondsPerSample = (2.7 / (16 * 1024)) * session.chunkSize
-        totalTimeLabel:setText(convertToMS(math.floor(session.songState.size / session.chunkSize *
+        local secondsPerSample = (2.7 / (16 * 1024)) * session.streamSize
+        totalTimeLabel:setText(convertToMS(math.floor(session.songState.size / session.streamSize *
             secondsPerSample)))
 
         while true do
             if session.songState ~= nil then
-                progressBar:setProgress(session.songState.position * session.chunkSize / session.songState
+                progressBar:setProgress(session.songState.position * session.streamSize / session.songState
                     .size *
                     100)
 
@@ -396,9 +398,13 @@ end
 
 local function app()
     createLoginControl(frame, function()
-        createAudioControl(frame, function()
-            createAddSongControl(frame)
-        end)
+        createAudioControl(frame,
+            function(query)
+                return session:listSongs(query)
+            end,
+            function()
+                createAddSongControl(frame)
+            end)
     end)
 end
 

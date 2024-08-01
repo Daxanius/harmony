@@ -26,7 +26,8 @@ local HarmonySession = {
         print(message)
     end,
     _maxStreamFails = 5,
-    chunkSize = 16 * 1024,
+    _streamFailCooldown = 0.1,
+    streamSize = 16 * 1024,
     user = nil,
     verbose = false,
     songState = nil,
@@ -36,13 +37,14 @@ local HarmonySession = {
     history = {}
 }
 
-function HarmonySession:new(host, chunks, maxStreamFails, verbose, logFunction)
+function HarmonySession:new(host, streamSize, maxStreamFails, streamFailCooldown, verbose, logFunction)
     local o = {}
     setmetatable(o, self)
     self.__index = self
     self._host = host or self._host
     self._maxStreamFails = maxStreamFails
-    self.chunkSize = chunks * 1024
+    self._streamFailCooldown = 0.1
+    self.streamSize = streamSize * 1024
 
     if logFunction ~= nil then
         self._log_function = logFunction
@@ -187,12 +189,12 @@ function HarmonySession:playStream()
 
     self:_add_to_history(self.songState.song)
 
-    while self.songState.position * self.chunkSize < self.songState.size do
+    while self.songState.position * self.streamSize < self.songState.size do
         local s, chunk = self:_makeRequest(
             "stream/read/" ..
             self.songState.song.file_id ..
             "?start=" ..
-            self.songState.position * self.chunkSize .. "&length=" .. self.chunkSize,
+            self.songState.position * self.streamSize .. "&length=" .. self.streamSize,
             "GET", nil, true) -- Open file stream
 
         if s then
@@ -210,7 +212,7 @@ function HarmonySession:playStream()
                 return false
             end
 
-            sleep(0.1) -- Wait before attempting again
+            sleep(self._streamFailCooldown) -- Wait before attempting again
         end
 
         if self.songState.shouldStop then
