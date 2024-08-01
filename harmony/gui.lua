@@ -26,6 +26,16 @@ local function isSmall(parent)
     return parent:getWidth() < 30
 end
 
+local function createButton(parent)
+    return parent:addButton():setForeground(config.theme.inputForeground):setBackground(config.theme.inputBackground)
+        :setBorder(parent
+            :getBackground())
+end
+
+local function createInput(parent)
+    return parent:addInput():setForeground(config.theme.inputForeground)
+end
+
 local function createPopup(parent, extraWidth, extraHeight)
     local control = parent:addMovableFrame("notification"):setBackground(config.theme.decoration):setForeground(config
             .theme.foreGround)
@@ -42,14 +52,53 @@ local function createPopup(parent, extraWidth, extraHeight)
     return control
 end
 
-local function createButton(parent)
-    return parent:addButton():setForeground(config.theme.inputForeground):setBackground(config.theme.inputBackground)
-        :setBorder(parent
-            :getBackground())
-end
+-- Dialogue is a table of strings
+local function createDialogue(title, dialogue, onDone)
+    local function createControl(id, x, y)
+        local control = createPopup(main)
 
-local function createInput(parent)
-    return parent:addInput():setForeground(config.theme.inputForeground)
+        if x and y then
+            control:setPosition(x, y)
+        end
+
+        local titleLabel = control:addLabel():setText(title):setForeground(config.theme.foreGround):setPosition(
+            "parent.w / 2 - self.w / 2", "parent.h / 2 - 3"):setTextAlign(
+            "center")
+        local textLabel = control:addLabel():setText(dialogue[id]):setPosition(2,
+            "parent.h / 2 - 1"):setSize(
+            "parent.w - 2", "parent.h - 2")
+
+        if id < #dialogue then
+            local nextButton = createButton(control):setPosition("parent.w - self.w + 1", "parent.h - self.h + 1")
+                :setText("Next")
+
+            nextButton:onClick(function(self, event, button, x, y)
+                control:remove()
+                createControl(id + 1, control:getX(), control:getY())
+            end)
+        else
+            local doneButton = createButton(control):setPosition("parent.w - self.w + 1", "parent.h - self.h + 1")
+                :setText("Done")
+
+            doneButton:onClick(function(self, event, button, x, y)
+                control:remove()
+                onDone()
+            end)
+        end
+
+
+        if id > 1 then
+            local previousButton = createButton(control):setPosition(1, "parent.h - self.h + 1")
+                :setText("Previous")
+
+            previousButton:onClick(function(self, event, button, x, y)
+                control:remove()
+                createControl(id - 1, control:getX(), control:getY())
+            end)
+        end
+    end
+
+    createControl(1)
 end
 
 local function showNotification(message, borderColor)
@@ -104,7 +153,15 @@ local function createLoginControl(parent, onLogin)
         end
 
         control:remove()
-        onLogin()
+        createDialogue("Welcome",
+            {
+                "Welcome to Harmony " .. session.user.name .. "!",
+                "Harmony is a music streaming service created by Daxanius.",
+                "You can add your own songs by pressing the plus icon in the top right corner.",
+                "Songs that you add are visible to other users.",
+                "Please make sure not the abuse this service.",
+                "Enjoy listening to music!"
+            }, onLogin)
     end)
 end
 
