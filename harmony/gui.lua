@@ -253,7 +253,7 @@ local function createAudioControl(parent, onAdd)
     local nextButton = createButton(controlFrame):setText(">"):setPosition("parent.w / 2 - self.w / 2 + 6", 1)
         :setSize(3, 3)
 
-    local volumeSlider = controlFrame:addSlider():setBarType("horizontal"):setMaxValue(10):setIndex(session.volume / 3.0 *
+    local volumeSlider = controlFrame:addSlider():setBarType("horizontal"):setMaxValue(10):setIndex(Volume / 3.0 *
             10):setPosition(2, 2)
         :setForeground(config.theme.inputBackground)
 
@@ -388,7 +388,7 @@ local function createAudioControl(parent, onAdd)
     end)
 
     volumeSlider:onChange(function(self, event, value)
-        session.volume = (value / 10.0) * 3.0
+        Volume = (value / 10.0) * 3.0
     end)
 
     listSongs()

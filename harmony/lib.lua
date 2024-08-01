@@ -2,6 +2,23 @@ local dfpwm = require("cc.audio.dfpwm")
 local speakers = { peripheral.find("speaker") }
 local decoder = dfpwm.make_decoder()
 
+Volume = 1
+
+local function playChunk(chunk)
+    local callBacks = {}
+    local returnValue = nil
+
+    for _, speaker in pairs(speakers) do
+        table.insert(callBacks, function()
+            returnValue = speaker.playAudio(chunk, Volume or 1)
+        end)
+    end
+
+    parallel.waitForAll(table.unpack(callBacks))
+
+    return returnValue
+end
+
 local HarmonySession = {
     _host = "https://localhost:8000/",
     _token = nil,
@@ -11,7 +28,6 @@ local HarmonySession = {
     chunkSize = 16 * 1024,
     user = nil,
     verbose = false,
-    volume = 1,
     songState = nil,
     historySize = 10,
     mode = "normal",
@@ -38,21 +54,6 @@ function HarmonySession:_log(message)
     if self.verbose then
         self._log_function(message)
     end
-end
-
-function HarmonySession:_playChunk(chunk)
-    local callBacks = {}
-    local returnValue = nil
-
-    for _, speaker in pairs(speakers) do
-        table.insert(callBacks, function()
-            returnValue = speaker.playAudio(chunk, self.volume or 1)
-        end)
-    end
-
-    parallel.waitForAll(table.unpack(callBacks))
-
-    return returnValue
 end
 
 function HarmonySession:_add_to_history(song)
@@ -193,7 +194,7 @@ function HarmonySession:playStream()
             "GET", nil, true) -- Open file stream
 
         if s then
-            while not self:_playChunk(decoder(chunk)) do
+            while not playChunk(decoder(chunk)) do
                 os.pullEvent("speaker_audio_empty")
             end
 
