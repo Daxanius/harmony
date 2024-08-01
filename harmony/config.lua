@@ -4,5 +4,5 @@ return {
     server = "http://127.0.0.1:8000/",
     theme = require("theme.default"),
     debug = false,
-    chunks = 16
+    chunks = 4
 }
