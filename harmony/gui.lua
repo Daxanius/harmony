@@ -23,10 +23,19 @@ function convertToMS(Seconds)
 end
 
 local function createPopup(parent)
-    return parent:addMovableFrame("notification"):setSize("parent.w / 2", "parent.h / 2"):setPosition(
-            "parent.w / 2 - self.w / 2",
-            "parent.h / 2 - self.h / 2"):setBackground(config.theme.decoration):setForeground(config.theme.foreGround)
+    local control = parent:addMovableFrame("notification"):setBackground(config.theme.decoration):setForeground(config
+            .theme.foreGround)
         :setZIndex(100)
+
+    if parent:getWidth() < 30 then
+        control:setSize("parent.w", "parent.h")
+    else
+        control:setSize("parent.w / 2", "parent.h / 2"):setPosition(
+            "parent.w / 2 - self.w / 2",
+            "parent.h / 2 - self.h / 2")
+    end
+
+    return control
 end
 
 local function createButton(parent)
@@ -56,11 +65,13 @@ end
 local function createLoginControl(parent, onLogin)
     local control = createPopup(parent)
     local titleLabel = control:addLabel():setText("Harmony"):setForeground(config.theme.foreGround):setPosition(
-        "parent.w / 2 - self.w / 2", 2):setTextAlign(
+        "parent.w / 2 - self.w / 2", "parent.h / 2 - 3"):setTextAlign(
         "center")
-    local userNameInput = createInput(control):setSize("parent.w - 10", 1):setPosition("parent.w / 2 - self.w / 2", 4)
+    local userNameInput = createInput(control):setSize("parent.w - 10", 1):setPosition("parent.w / 2 - self.w / 2",
+            "parent.h / 2 - 1")
         :setDefaultText("Username")
-    local passwordInput = createInput(control):setSize("parent.w - 10", 1):setPosition("parent.w / 2 - self.w / 2", 6)
+    local passwordInput = createInput(control):setSize("parent.w - 10", 1):setPosition("parent.w / 2 - self.w / 2",
+            "parent.h / 2 + 1")
         :setDefaultText("Password")
         :setInputType("password")
     local loginButton = createButton(control):setPosition("parent.w - self.w + 1", "parent.h - self.h + 1")
