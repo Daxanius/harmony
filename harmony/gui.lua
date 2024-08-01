@@ -175,7 +175,7 @@ local function createAddSongControl(parent)
     local nameInput = createInput(control):setSize("parent.w - 10", 1):setPosition("parent.w / 2 - self.w / 2", 4)
         :setDefaultText("Name")
     local authorInput = createInput(control):setSize("parent.w - 10", 1):setPosition("parent.w / 2 - self.w / 2", 6)
-        :setDefaultText("Author")
+        :setDefaultText("Author*")
     local urlInput = createInput(control):setSize("parent.w - 10", 1):setPosition("parent.w / 2 - self.w / 2", 8)
         :setDefaultText("YouTube URL")
     local addButton = createButton(control):setPosition("parent.w - self.w + 1", "parent.h - self.h + 1")
@@ -384,8 +384,10 @@ local function createAudioControl(parent, fetchSongs, onAdd)
     end)
 
     previousButton:onClick(function(self, event, item, x, y)
-        if #session.history > 0 then
-            play(session.history[#session.history])
+        local song = session:popHistory()
+
+        if song then
+            play(song)
         end
     end)
 

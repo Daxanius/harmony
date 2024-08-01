@@ -105,6 +105,22 @@ function HarmonySession:_makeRequest(endpoint, method, data, binary)
     end
 end
 
+function HarmonySession:popHistory()
+    if #self.history == 0 then
+        return nil -- No song to pop if history is empty
+    end
+
+    -- Pop the last song from the history
+    local song = self.history[#self.history]
+    table.remove(self.history, #self.history)
+
+    if song == nil then
+        return session.songState.song
+    end
+
+    return song
+end
+
 function HarmonySession:getServerVersion()
     local success, response = self:_makeRequest("", "GET")
 
@@ -186,8 +202,6 @@ function HarmonySession:playStream()
         return false, "No song loaded"
     end
 
-    self:_add_to_history(self.songState.song)
-
     while self.songState.position * self.streamSize < self.songState.size do
         local s, chunk = self:_makeRequest(
             "stream/read/" ..
@@ -195,6 +209,10 @@ function HarmonySession:playStream()
             "?start=" ..
             self.songState.position * self.streamSize .. "&length=" .. self.streamSize,
             "GET", nil, true) -- Open file stream
+
+        if self.songState.position * self.streamSize / self.songState.size > 0.1 and not (#self.history ~= 0 and self.history[#self.history].id == self.songState.song.id) then
+            self:_add_to_history(self.songState.song)
+        end
 
         if s then
             while not playChunk(decoder(chunk)) do
@@ -236,8 +254,16 @@ function HarmonySession:stopStream()
 end
 
 function HarmonySession:addSong(name, author, youtubeURL)
-    local success, response = self:_makeRequest("song", "POST",
-        { name = name, author = author, youtube_url = youtubeURL }) -- Open file stream
+    local body = {
+        name = name,
+        youtube_url = youtubeURL
+    }
+
+    if author ~= nil and author ~= "" then
+        body.author = author
+    end
+
+    local success, response = self:_makeRequest("song", "POST", body) -- Open file stream
 
     if success then
         self:_log("Adding song successful: " .. response.youtube_url)
