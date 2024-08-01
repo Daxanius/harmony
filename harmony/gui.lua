@@ -4,7 +4,7 @@ local basalt         = require("/basalt")
 local config         = require("config")
 local HarmonySession = require("lib")
 
-local session        = HarmonySession:new(config.server, config.streamSize, config.streamFailCooldown,
+local session        = HarmonySession:new(config.server, config.historySize, config.historyWatchPercent, config.streamSize, config.streamFailCooldown,
     config.maxStreamFails, config.debug,
     function(message)
         basalt.debug(message)

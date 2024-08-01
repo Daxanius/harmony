@@ -27,6 +27,7 @@ local HarmonySession = {
     end,
     _maxStreamFails = 5,
     _streamFailCooldown = 0.1,
+    _historyWatchPercent = 0.1,
     streamSize = 16 * 1024,
     user = nil,
     verbose = false,
@@ -37,11 +38,14 @@ local HarmonySession = {
     history = {}
 }
 
-function HarmonySession:new(host, streamSize, maxStreamFails, streamFailCooldown, verbose, logFunction)
+function HarmonySession:new(host, historySize, historyWatchPercent, streamSize, maxStreamFails, streamFailCooldown,
+                            verbose, logFunction)
     local o = {}
     setmetatable(o, self)
     self.__index = self
     self._host = host or self._host
+    self.historySize = historySize
+    self._historyWatchPercent = historyWatchPercent
     self._maxStreamFails = maxStreamFails
     self._streamFailCooldown = streamFailCooldown
     self.streamSize = streamSize * 1024
@@ -210,7 +214,7 @@ function HarmonySession:playStream()
             self.songState.position * self.streamSize .. "&length=" .. self.streamSize,
             "GET", nil, true) -- Open file stream
 
-        if self.songState.position * self.streamSize / self.songState.size > 0.1 and not (#self.history ~= 0 and self.history[#self.history].id == self.songState.song.id) then
+        if self.songState.position * self.streamSize / self.songState.size > self._historyWatchPercent and not (#self.history ~= 0 and self.history[#self.history].id == self.songState.song.id) then
             self:_add_to_history(self.songState.song)
         end
 
