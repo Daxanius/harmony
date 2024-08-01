@@ -28,7 +28,6 @@ local HarmonySession = {
     end,
     _maxStreamFails = 5,
     _streamFailCooldown = 0.1,
-    _requestMadeCooldown = 0.1,
     streamSize = 16 * 1024,
     user = nil,
     verbose = false,
@@ -39,15 +38,13 @@ local HarmonySession = {
     history = {}
 }
 
-function HarmonySession:new(host, streamSize, maxStreamFails, streamFailCooldown, requestMadeCooldown, verbose,
-                            logFunction)
+function HarmonySession:new(host, streamSize, maxStreamFails, streamFailCooldown, verbose, logFunction)
     local o = {}
     setmetatable(o, self)
     self.__index = self
     self._host = host or self._host
     self._maxStreamFails = maxStreamFails
     self._streamFailCooldown = streamFailCooldown
-    self._requestMadeCooldown = requestMadeCooldown
     self.streamSize = streamSize * 1024
 
     if logFunction ~= nil then
@@ -86,20 +83,24 @@ function HarmonySession:_makeRequest(endpoint, method, data, binary)
     self:_log("Making " .. method .. " request to " .. url)
 
     while madeRequest do
-        local event = os.pullEvent()
+        os.pullEvent("http_done")
         -- sleep(self._requestMadeCooldown)
     end
 
     madeRequest = true
-    local response = http.request(request)
+    http.request(request)
+
+    local function releaseLock()
+        madeRequest = false
+        os.queueEvent("http_done")
+    end
 
     while true do
         local event, response_url, responseBody, res = os.pullEvent()
         if event == "http_success" and response_url == url then
             self:_log("Request successful: " .. url)
+            releaseLock()
 
-
-            madeRequest = false
             if binary then
                 return true, responseBody.readAll()
             else
@@ -107,8 +108,8 @@ function HarmonySession:_makeRequest(endpoint, method, data, binary)
             end
         elseif event == "http_failure" and response_url == url then
             self:_log("Request failed: " .. url .. " " .. responseBody)
+            releaseLock()
 
-            madeRequest = false
             if res == nil then
                 return false, responseBody
             else

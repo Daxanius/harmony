@@ -5,7 +5,7 @@ local config         = require("config")
 local HarmonySession = require("lib")
 
 local session        = HarmonySession:new(config.server, config.streamSize, config.streamFailCooldown,
-    config.maxStreamFails, config.requestMadeCooldown, config.debug,
+    config.maxStreamFails, config.debug,
     function(message)
         basalt.debug(message)
     end)
@@ -358,7 +358,7 @@ local function createAudioControl(parent, fetchSongs, onAdd)
     end
 
     local function play()
-        if songList:getValue() == nil then
+        if songList:getValue() == nil or songList:getValue().args == nil then
             return
         end
 
