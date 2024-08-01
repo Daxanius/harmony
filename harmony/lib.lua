@@ -1,7 +1,6 @@
 local dfpwm = require("cc.audio.dfpwm")
 local speakers = { peripheral.find("speaker") }
 local decoder = dfpwm.make_decoder()
-local madeRequest = false
 
 Volume = 1
 
@@ -82,19 +81,12 @@ function HarmonySession:_makeRequest(endpoint, method, data, binary)
 
     self:_log("Making " .. method .. " request to " .. url)
 
-    while madeRequest do
-        os.pullEvent()
-        -- sleep(self._requestMadeCooldown)
-    end
-
-    madeRequest = true
     http.request(request)
 
     while true do
         local event, response_url, responseBody, res = os.pullEvent()
         if event == "http_success" and response_url == url then
             self:_log("Request successful: " .. url)
-            madeRequest = false
 
             if binary then
                 return true, responseBody.readAll()
@@ -103,7 +95,6 @@ function HarmonySession:_makeRequest(endpoint, method, data, binary)
             end
         elseif event == "http_failure" and response_url == url then
             self:_log("Request failed: " .. url .. " " .. responseBody)
-            madeRequest = false
 
             if res == nil then
                 return false, responseBody
