@@ -14,14 +14,14 @@ local main           = basalt.createFrame()
 local frame          = main:addFrame():setSize("parent.w", "parent.h"):setBackground(config.theme.background)
 local playThread     = main:addThread()
 
-local function Format(Int)
-    return string.format("%02i", Int)
+local function Format(int)
+    return string.format("%02i", int)
 end
 
-local function convertToMS(Seconds)
-    local Minutes = (Seconds - Seconds % 60) / 60
-    Seconds = Seconds - Minutes * 60
-    return Format(Minutes) .. ":" .. Format(Seconds)
+local function convertToMS(seconds)
+    local Minutes = (seconds - seconds % 60) / 60
+    seconds = seconds - Minutes * 60
+    return Format(Minutes) .. ":" .. Format(seconds)
 end
 
 local function isSmall(parent)
