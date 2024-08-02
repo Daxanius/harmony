@@ -89,7 +89,11 @@ function HarmonySession:_makeRequest(endpoint, method, data, binary)
 
     while true do
         local event, response_url, responseBody, res = os.pullEvent()
-        if event == "http_success" and response_url == url then
+        if event == "http_success" then
+            if response_url ~= url then
+                return false
+            end
+
             self:_log("Request successful: " .. url)
 
             if binary then
@@ -97,7 +101,11 @@ function HarmonySession:_makeRequest(endpoint, method, data, binary)
             else
                 return true, textutils.unserializeJSON(responseBody.readAll())
             end
-        elseif event == "http_failure" and response_url == url then
+        elseif event == "http_failure" then
+            if response_url ~= url then
+                return false
+            end
+
             self:_log("Request failed: " .. url .. " " .. responseBody)
 
             if res == nil then

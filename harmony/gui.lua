@@ -196,6 +196,8 @@ local function createAddSongControl(parent)
             control:remove()
         end
     end)
+
+    return control
 end
 
 local function createUpdateControl(parent, onCancel)
@@ -228,6 +230,7 @@ end
 local function createAudioControl(parent, fetchSongs, onAdd)
     local barThread = parent:addThread()
     local queryCache = nil
+    local addControl = nil
 
     local control = parent:addFrame():setSize("parent.w", "parent.h"):setBackground(config.theme.background)
     local topBar = control:addFrame():setSize("parent.w", 1):setBackground(config.theme.inputBackground)
@@ -368,7 +371,11 @@ local function createAudioControl(parent, fetchSongs, onAdd)
     end
 
     addButton:onClick(function(self, event, item, x, y)
-        onAdd()
+        if addControl ~= nil then
+            addControl:remove()
+        end
+
+        addControl = onAdd()
     end)
 
     playButton:onClick(function(self, event, item, x, y)
@@ -407,7 +414,7 @@ local function app()
                 return session:listSongs(query)
             end,
             function()
-                createAddSongControl(frame)
+                return createAddSongControl(frame)
             end)
     end)
 end
