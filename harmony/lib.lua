@@ -22,7 +22,7 @@ end
 local HarmonySession = {
     _host = "https://localhost:8000/",
     _token = nil,
-    _log_function = function(message)
+    _logFunction = function(message)
         print(message)
     end,
     _maxStreamFails = 5,
@@ -51,7 +51,7 @@ function HarmonySession:new(host, historySize, historyWatchPercent, streamSize, 
     self.streamSize = streamSize * 1024
 
     if logFunction ~= nil then
-        self._log_function = logFunction
+        self._logFunction = logFunction
     end
 
     self.verbose = verbose or false
@@ -60,7 +60,7 @@ end
 
 function HarmonySession:_log(message)
     if self.verbose then
-        self._log_function(message)
+        self._logFunction(message)
     end
 end
 
