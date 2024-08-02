@@ -29,6 +29,11 @@ local function downloadFile(fileName)
     end
 end
 
+-- Remove basalt if it exists
+if fs.exists("/basalt.lua") then
+    fs.delete("/basalt.lua")
+end
+
 -- Install basalt
 shell.run("wget", "run", "https://basalt.madefor.cc/install.lua", "packed")
 
