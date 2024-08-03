@@ -351,6 +351,7 @@ local function createAudioControl(parent, fetchSongs, onAdd)
             local color = nil
             if session.songState ~= nil and songs[songCount].id == session.songState.song.id then
                 color = config.theme.inputBackground
+                songIndex = songCount
             end
 
             local name = songs[songCount].name
@@ -469,7 +470,6 @@ local function createAudioControl(parent, fetchSongs, onAdd)
                 return
             end
 
-            songIndex = songList:getItemIndex()
             play(songList:getValue().args[1])
         end
     end)
