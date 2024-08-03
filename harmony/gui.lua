@@ -4,7 +4,8 @@ local basalt         = require("/basalt")
 local config         = require("config")
 local HarmonySession = require("lib")
 
-local session        = HarmonySession:new(config.server, config.historySize, config.historyWatchPercent, config.streamSize, config.streamFailCooldown,
+local session        = HarmonySession:new(config.server, config.historySize, config.historyWatchPercent,
+    config.streamSize, config.streamFailCooldown,
     config.maxStreamFails, config.debug,
     function(message)
         basalt.debug(message)
@@ -227,10 +228,45 @@ local function createUpdateControl(parent, onCancel)
     end)
 end
 
+local function createModeControl(parent, onDone)
+    local control = createPopup(parent)
+    local titleLabel = control:addLabel():setText("Select Mode"):setForeground(config.theme.foreGround):setPosition(
+        "parent.w / 2 - self.w / 2", 2):setTextAlign(
+        "center")
+    local typeDropdown = control:addDropdown():setForeground(config.theme.inputForeground):setBackground(config
+        .theme.inputBackground):addItem(
+        "Normal"):addItem(
+        "Shuffle"):addItem(
+        "Loop"):addItem(
+        "Stop"):setPosition("parent.w / 2 - self.w / 2",
+        "parent.h / 2")
+
+    local doneButton = createButton(control):setPosition("parent.w - self.w + 1", "parent.h - self.h + 1")
+        :setText("Done")
+    local cancelButton = createButton(control):setPosition(1, "parent.h - self.h + 1")
+        :setText("Cancel")
+
+    cancelButton:onClick(function(self, event, button, x, y)
+        control:remove()
+    end)
+
+    doneButton:onClick(function(self, event, button, x, y)
+        if onDone then
+            onDone(typeDropdown:getValue())
+        end
+
+        control:remove()
+    end)
+
+    return control
+end
+
 local function createAudioControl(parent, fetchSongs, onAdd)
     local barThread = parent:addThread()
+    local mode = "Normal"
     local queryCache = nil
     local addControl = nil
+    local modeControl = nil
 
     local control = parent:addFrame():setSize("parent.w", "parent.h"):setBackground(config.theme.background)
     local topBar = control:addFrame():setSize("parent.w", 1):setBackground(config.theme.inputBackground)
@@ -262,12 +298,17 @@ local function createAudioControl(parent, fetchSongs, onAdd)
             Volume = (value / 10.0) * 3.0
         end)
 
-        local typeDropdown = controlFrame:addDropdown():setForeground(config.theme.inputForeground):setBackground(config
-            .theme.inputBackground):addItem(
-            "Normal"):addItem(
-            "Shuffle"):addItem(
-            "Loop"):addItem(
-            "Stop"):setPosition("parent.w - self.w - 2", 2):setScrollable(true)
+        local modeButton = createButton(controlFrame):setText("Mode"):setPosition("parent.w - self.w - 2")
+
+        modeButton:onClick(function(self, event, item, x, y)
+            if modeControl ~= nil then
+                modeControl:remove()
+            end
+
+            modeControl = createModeControl(main, function(item)
+                mode = item
+            end)
+        end)
     end
 
     local progressBar = controlFrame:addProgressbar():setDirection("right"):setProgressBar(config.theme.inputBackground)
