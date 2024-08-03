@@ -378,9 +378,9 @@ local function createAudioControl(parent, fetchSongs, onAdd)
             else
                 songIndex = 1
                 if songIndex <= #songs then
-                    return nil
-                else
                     return songs[songIndex]
+                else
+                    return nil
                 end
             end
         elseif mode == "Stop" then
