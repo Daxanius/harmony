@@ -252,7 +252,7 @@ local function createModeControl(parent, onDone)
 
     doneButton:onClick(function(self, event, button, x, y)
         if onDone then
-            onDone(typeDropdown:getValue())
+            onDone(typeDropdown:getValue().text)
         end
 
         control:remove()
@@ -264,6 +264,9 @@ end
 local function createAudioControl(parent, fetchSongs, onAdd)
     local barThread = parent:addThread()
     local mode = "Normal"
+    local songs = {}
+    local songIndex = 1
+
     local queryCache = nil
     local addControl = nil
     local modeControl = nil
@@ -333,7 +336,8 @@ local function createAudioControl(parent, fetchSongs, onAdd)
             query = nil
         end
 
-        local success, songs = fetchSongs(query)
+        local success, songsT = fetchSongs(query)
+        songs = songsT
 
         if not success or not songs then
             return
@@ -359,6 +363,30 @@ local function createAudioControl(parent, fetchSongs, onAdd)
 
         songList:selectItem(selected)
         songList:setOffset(offset)
+    end
+
+    local function getNext()
+        if #songs < 1 then
+            return nil
+        end
+
+        if mode == "Normal" then
+            songIndex = songIndex + 1
+
+            if songIndex <= #songs then
+                return songs[songIndex]
+            else
+                return nil
+            end
+        elseif mode == "Stop" then
+            return nil
+        elseif mode == "Loop" then
+            return songs[songIndex]
+        elseif mode == "Shuffle" then
+            return songs[math.random(#songs)]
+        end
+
+        return nil
     end
 
     local function updateBar()
@@ -396,7 +424,20 @@ local function createAudioControl(parent, fetchSongs, onAdd)
     end
 
     local function playTask()
-        session:playStream()
+        local hasNext = true
+
+        while hasNext do
+            session:playStream()
+
+            local next = getNext()
+            if next then
+                session:loadStream(next)
+                listSongs(queryCache)
+            else
+                hasNext = false
+            end
+        end
+
         stop()
     end
 
@@ -427,12 +468,21 @@ local function createAudioControl(parent, fetchSongs, onAdd)
                 return
             end
 
+            songIndex = songList:getItemIndex()
             play(songList:getValue().args[1])
         end
     end)
 
     previousButton:onClick(function(self, event, item, x, y)
         local song = session:popHistory()
+
+        if song then
+            play(song)
+        end
+    end)
+
+    nextButton:onClick(function(self, event, item, x, y)
+        local song = getNext()
 
         if song then
             play(song)
