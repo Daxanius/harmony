@@ -185,7 +185,7 @@ function HarmonySession:listSongs(query)
     if success then
         self:_log("Fetching songs successful")
     else
-        self:_log("Fetching songs failed: " .. response)
+        self:_log("Fetching songs failed")
     end
 
     return success, response
@@ -203,7 +203,7 @@ function HarmonySession:loadStream(song)
             shouldStop = false
         }
     else
-        self:_log("Opening stream failed: " .. response)
+        self:_log("Opening stream failed")
     end
 
     return success
@@ -280,7 +280,7 @@ function HarmonySession:addSong(name, author, youtubeURL)
     if success then
         self:_log("Adding song successful: " .. response.youtube_url)
     else
-        self:_log("Adding song failed: " .. response)
+        self:_log("Adding song failed")
     end
 
     return success, response
