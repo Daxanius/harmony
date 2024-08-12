@@ -2,6 +2,7 @@ local dfpwm = require("cc.audio.dfpwm")
 local speakers = { peripheral.find("speaker") }
 local decoder = dfpwm.make_decoder()
 
+MadeRequest = false
 Volume = 1
 
 local function playChunk(chunk)
@@ -85,11 +86,18 @@ function HarmonySession:_makeRequest(endpoint, method, data, binary)
 
     self:_log("Making " .. method .. " request to " .. url)
 
+    if MadeRequest then
+        return false, "Network occupied"
+    end
+
+    MadeRequest = true
     http.request(request)
 
-    while true do
+    while MadeRequest do
         local event, response_url, responseBody, res = os.pullEvent()
         if event == "http_success" then
+            MadeRequest = false
+
             if response_url ~= url then
                 return false
             end
@@ -102,6 +110,8 @@ function HarmonySession:_makeRequest(endpoint, method, data, binary)
                 return true, textutils.unserializeJSON(responseBody.readAll())
             end
         elseif event == "http_failure" then
+            MadeRequest = false
+
             if response_url ~= url then
                 return false
             end
@@ -222,11 +232,11 @@ function HarmonySession:playStream()
             self.songState.position * self.streamSize .. "&length=" .. self.streamSize,
             "GET", nil, true) -- Open file stream
 
-        if self.songState.position * self.streamSize / self.songState.size > self._historyWatchPercent and not (#self.history ~= 0 and self.history[#self.history].id == self.songState.song.id) then
-            self:_add_to_history(self.songState.song)
-        end
-
         if s then
+            if self.songState.position * self.streamSize / self.songState.size > self._historyWatchPercent and not (#self.history ~= 0 and self.history[#self.history].id == self.songState.song.id) then
+                self:_add_to_history(self.songState.song)
+            end
+
             while not playChunk(decoder(chunk)) do
                 os.pullEvent("speaker_audio_empty")
             end

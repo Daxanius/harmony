@@ -6,7 +6,7 @@ return {
     debug = false,
     streamSize = 4,
     maxStreamFails = 5,
-    streamFailCooldown = 0.1,
+    streamFailCooldown = 0.5,
     historySize = 10,
-    historyWatchPercent = 0.1
+    historyWatchPercent = 0.01
 }
