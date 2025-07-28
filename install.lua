@@ -42,7 +42,7 @@ if fs.exists("/basalt.lua") then
 end
 
 -- Install basalt
-shell.run("wget", "run", "https://raw.githubusercontent.com/Pyroxenium/Basalt/refs/heads/master/docs/install.lua release ", "release", "latest.lua")
+shell.run("wget", "run", "https://raw.githubusercontent.com/Pyroxenium/Basalt/refs/heads/master/docs/install.lua", "release", "latest.lua")
 
 -- Download all files
 for _, file in ipairs(files) do
