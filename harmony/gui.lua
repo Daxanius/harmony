@@ -429,9 +429,9 @@ local function createAudioControl(parent, fetchSongs, onAdd)
         local hasNext = true
 
         while hasNext do
-            session:playStream()
-
             local next = getNext()
+            session:playStreamWS(next)
+
             if next then
                 session:loadStream(next)
                 listSongs(queryCache)
