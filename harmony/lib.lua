@@ -275,6 +275,49 @@ function HarmonySession:stopStream()
     end
 end
 
+function HarmonySession:playStreamWS(song)
+    if song == nil then
+        return false, "No song provided"
+    end
+
+    local url = self._host:gsub("^https", "wss"):gsub("^http", "ws") .. "stream/" .. song.file_id .. "?channel"
+    self:_log("Connecting to WebSocket stream: " .. url)
+
+    local ws, err = http.websocket(url)
+    if not ws then
+        self:_log("WebSocket connection failed: " .. err)
+        return false, err
+    end
+
+    self:_log("WebSocket connection established")
+
+    local decoder = dfpwm.make_decoder()
+    local playing = true
+
+    while playing do
+        local event, id, message, isBinary = os.pullEvent()
+
+        if event == "websocket_message" and id == url then
+            if isBinary then
+                local decoded = decoder(message)
+                while not playChunk(decoded) do
+                    os.pullEvent("speaker_audio_empty")
+                end
+            else
+                self:_log("Received text over WebSocket (unexpected): " .. tostring(message))
+            end
+        elseif event == "websocket_closed" and id == url then
+            self:_log("WebSocket closed")
+            playing = false
+        elseif event == "websocket_failure" and id == url then
+            self:_log("WebSocket failure")
+            playing = false
+        end
+    end
+
+    return true
+end
+
 function HarmonySession:addSong(name, author, youtubeURL)
     local body = {
         name = name,
