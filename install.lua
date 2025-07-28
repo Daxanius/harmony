@@ -1,4 +1,11 @@
-local repoURL = "https://raw.githubusercontent.com/Daxanius/harmony/main"
+local args = { ... }
+local branch = "main"
+
+if #args > 0 then
+    branch = args[1]
+end
+
+local repoURL = "https://raw.githubusercontent.com/Daxanius/harmony/" .. branch
 
 -- List of files to download and their paths
 local files = {
